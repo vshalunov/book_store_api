@@ -13,12 +13,4 @@ public interface ApiConfig extends Config {
     @Key("apiUrl")
     String apiUrl();
 
-    @Key("login")
-    String login();
-
-    @Key("password")
-    String password();
-
-    @Key("remoteURL")
-    String remoteURL();
 }

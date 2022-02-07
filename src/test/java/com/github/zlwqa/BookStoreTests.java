@@ -15,6 +15,7 @@ import io.restassured.RestAssured;
 import org.aeonbits.owner.ConfigFactory;
 import org.junit.jupiter.api.*;
 
+import static io.qameta.allure.Allure.step;
 import static io.restassured.RestAssured.given;
 import static io.restassured.http.ContentType.JSON;
 import static org.hamcrest.Matchers.is;
@@ -49,16 +50,19 @@ public class BookStoreTests {
         SelenideLogger.addListener("AllureSelenide", new AllureSelenide());
         RestAssured.baseURI = API_CONFIG.apiUrl();
 
-        UserResponseData userResponseData = given()
-                .contentType(JSON)
-                .body(setUserLoginData())
-                .when()
-                .post("/Account/v1/Login")
-                .then()
-                .extract().as(UserResponseData.class);
+        step("Получение токена авторизация и userId", () -> {
+            UserResponseData userResponseData = given()
+                    .contentType(JSON)
+                    .body(setUserLoginData())
+                    .when()
+                    .post("/Account/v1/Login")
+                    .then()
+                    .extract().as(UserResponseData.class);
 
-        USER_RESPONSE_DATA.setUserId(userResponseData.getUserId());
-        USER_RESPONSE_DATA.setToken(userResponseData.getToken());
+            USER_RESPONSE_DATA.setUserId(userResponseData.getUserId());
+            USER_RESPONSE_DATA.setToken(userResponseData.getToken());
+        });
+
     }
 
     @Test
