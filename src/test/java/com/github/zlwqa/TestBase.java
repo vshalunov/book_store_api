@@ -22,7 +22,6 @@ public class TestBase {
     static void setup() {
         SelenideLogger.addListener("AllureSelenide", new AllureSelenide());
         RestAssured.baseURI = API_CONFIG.apiUrl();
-        Configuration.baseUrl = API_CONFIG.webUrl();
-        Configuration.remote = REMOTE_URL;
+        //Configuration.remote = REMOTE_URL;
     }
 }

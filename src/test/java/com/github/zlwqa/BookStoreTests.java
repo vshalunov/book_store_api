@@ -44,7 +44,6 @@ public class BookStoreTests extends TestBase {
 
         given()
                 .contentType(JSON)
-                .baseUri("https://demoqa.com")
                 .body(data)
                 .when()
                 .post("/Account/v1/Authorized")
