@@ -14,6 +14,8 @@ import org.junit.jupiter.api.*;
 
 import static com.github.zlwqa.config.App.API_CONFIG;
 import static com.github.zlwqa.config.App.CREDENTIALS_CONFIG;
+import static com.github.zlwqa.specs.Specs.requestSpec;
+import static com.github.zlwqa.specs.Specs.responseSpec;
 import static io.qameta.allure.Allure.step;
 import static io.restassured.RestAssured.*;
 import static io.restassured.http.ContentType.JSON;
@@ -50,7 +52,7 @@ public class BookStoreTests {
                     .when()
                     .post("/Account/v1/Login")
                     .then()
-                    .spec(responseSpecification)
+                    .spec(responseSpec)
                     .extract().as(UserResponseData.class);
 
             USER_RESPONSE_DATA.setUserId(userResponseData.getUserId());
@@ -69,12 +71,12 @@ public class BookStoreTests {
     @Link(name = "Book Store", url = "https://demoqa.com/books")
     void tokenGenerationTest() {
         given()
-                .spec(requestSpecification)
+                .spec(requestSpec)
                 .body(setUserLoginData())
                 .when()
                 .post("/Account/v1/GenerateToken")
                 .then()
-                .spec(responseSpecification)
+                .spec(responseSpec)
                 .body("token", notNullValue(),
                         "status", is("Success"),
                         "result", is("User authorized successfully."));
@@ -89,11 +91,11 @@ public class BookStoreTests {
     @Severity(SeverityLevel.NORMAL)
     void displayAListOfAllBooksTest() {
         given()
-                .spec(requestSpecification)
+                .spec(requestSpec)
                 .when()
                 .get("/BookStore/v1/Books")
                 .then()
-                .spec(responseSpecification)
+                .spec(responseSpec)
                 .body("books", notNullValue(),
                         "books[0].isbn", is("9781449325862"),
                         "books[0].title", is("Git Pocket Guide"));
@@ -108,12 +110,12 @@ public class BookStoreTests {
     @Severity(SeverityLevel.NORMAL)
     void displayABookByISBNInTheListOfAllBooksTest() {
         given()
-                .spec(requestSpecification)
+                .spec(requestSpec)
                 .formParam("ISBN", "9781449325862")
                 .when()
                 .get("/BookStore/v1/Book")
                 .then()
-                .spec(responseSpecification)
+                .spec(responseSpec)
                 .body(notNullValue())
                 .body("isbn", is("9781449325862"),
                         "title", is("Git Pocket Guide"));
@@ -131,7 +133,7 @@ public class BookStoreTests {
                 "\"collectionOfIsbns\" : [{\"isbn\":\"9781449325862\"}]}";
 
         given()
-                .spec(requestSpecification)
+                .spec(requestSpec)
                 .header("Authorization", "Bearer " + USER_RESPONSE_DATA.getToken())
                 .body(data)
                 .when()
@@ -154,7 +156,7 @@ public class BookStoreTests {
                 "\"userId\": \"" + USER_RESPONSE_DATA.getUserId() + "\"}";
 
         given()
-                .spec(requestSpecification)
+                .spec(requestSpec)
                 .header("Authorization", "Bearer " + USER_RESPONSE_DATA.getToken())
                 .baseUri("https://demoqa.com")
                 .body(data)
