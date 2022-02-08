@@ -5,13 +5,15 @@ import annotations.JiraIssues;
 import annotations.Layer;
 import annotations.Microservice;
 import com.codeborne.selenide.logevents.SelenideLogger;
+import com.github.zlwqa.lombok.UserRequestDataLogin;
 import com.github.zlwqa.lombok.UserResponseData;
 import io.qameta.allure.*;
 import io.qameta.allure.selenide.AllureSelenide;
 import io.restassured.RestAssured;
 import org.junit.jupiter.api.*;
 
-import static com.github.zlwqa.config.App.*;
+import static com.github.zlwqa.config.App.API_CONFIG;
+import static com.github.zlwqa.config.App.CREDENTIALS_CONFIG;
 import static io.qameta.allure.Allure.step;
 import static io.restassured.RestAssured.given;
 import static io.restassured.http.ContentType.JSON;
@@ -25,11 +27,22 @@ import static org.hamcrest.Matchers.notNullValue;
 @DisplayName("Тестирование веб-приложения Book Store")
 public class BookStoreTests {
 
+    public static final UserResponseData USER_RESPONSE_DATA = new UserResponseData();
+    public static final UserRequestDataLogin USER_REQUEST_DATA_LOGIN = new UserRequestDataLogin();
+
+    public static final String USER_NAME = CREDENTIALS_CONFIG.userName();
+    public static final String PASSWORD = CREDENTIALS_CONFIG.password();
+
+    public static UserRequestDataLogin setUserLoginData() {
+        USER_REQUEST_DATA_LOGIN.setUserName(USER_NAME);
+        USER_REQUEST_DATA_LOGIN.setPassword(PASSWORD);
+        return USER_REQUEST_DATA_LOGIN;
+    }
+
     @BeforeAll
     static void setup() {
         SelenideLogger.addListener("AllureSelenide", new AllureSelenide());
         RestAssured.baseURI = API_CONFIG.apiUrl();
-
         step("Получение токена авторизации и userId", () -> {
             UserResponseData userResponseData = given()
                     .contentType(JSON)
@@ -54,7 +67,6 @@ public class BookStoreTests {
     @Severity(SeverityLevel.CRITICAL)
     @Link(name = "Book Store", url = "https://demoqa.com/books")
     void tokenGenerationTest() {
-
         given()
                 .contentType(JSON)
                 .body(setUserLoginData())
@@ -113,7 +125,7 @@ public class BookStoreTests {
     @Feature("Список добавленных книг в профиле пользователя")
     @Story("Метод POST /BookStore/v1/Books")
     @Severity(SeverityLevel.BLOCKER)
-    static void addingABookToAUserProfileTest() {
+    void addingABookToAUserProfileTest() {
         String data = "{\"userId\": \"" + USER_RESPONSE_DATA.getUserId() + "\"," +
                 "\"collectionOfIsbns\" : [{\"isbn\":\"9781449325862\"}]}";
 
@@ -135,10 +147,10 @@ public class BookStoreTests {
     @Feature("Список добавленных книг в профиле пользователя")
     @Story("Метод DELETE /BookStore/v1/Book")
     @Severity(SeverityLevel.BLOCKER)
-    static void removingAnAddedBookFromAUserProfileTest() {
+    void removingAnAddedBookFromAUserProfileTest() {
 
         String data = "{\"isbn\":\"9781449325862\"," +
-                "userId\": \"" + USER_RESPONSE_DATA.getUserId() + "\"}";
+                "\"userId\": \"" + USER_RESPONSE_DATA.getUserId() + "\"}";
 
         given()
                 .contentType(JSON)
