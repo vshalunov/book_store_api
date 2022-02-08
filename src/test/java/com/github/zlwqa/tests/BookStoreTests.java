@@ -4,8 +4,10 @@ import annotations.JiraIssue;
 import annotations.JiraIssues;
 import annotations.Layer;
 import annotations.Microservice;
+import com.github.zlwqa.lombok.BookList;
 import com.github.zlwqa.lombok.UserRequestDataLogin;
 import com.github.zlwqa.lombok.UserResponseData;
+import com.github.zlwqa.models.UserToken;
 import io.qameta.allure.*;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Tag;
@@ -17,8 +19,10 @@ import static com.github.zlwqa.specs.Specs.requestSpec;
 import static com.github.zlwqa.specs.Specs.responseSpec;
 import static com.github.zlwqa.tests.TestData.*;
 import static io.restassured.RestAssured.given;
-import static org.hamcrest.Matchers.is;
-import static org.hamcrest.Matchers.notNullValue;
+import static org.assertj.core.api.AssertionsForClassTypes.assertThat;
+import static io.restassured.module.jsv.JsonSchemaValidator.matchesJsonSchemaInClasspath;
+import static org.hamcrest.Matchers.*;
+import static org.junit.jupiter.api.Assertions.assertEquals;
 
 @Layer("REST")
 @Owner("vshalunov")
@@ -39,7 +43,6 @@ public class BookStoreTests extends TestBase {
         return USER_REQUEST_DATA_LOGIN;
     }
 
-
     @Test
     @DisplayName("Успешная генерация токена (с использованием Models)")
     @Tags({@Tag("Critical"), @Tag("Highest")})
@@ -48,18 +51,40 @@ public class BookStoreTests extends TestBase {
     @Story("Метод /Account/v1/GenerateToken")
     @Severity(SeverityLevel.CRITICAL)
     @Link(name = "Book Store", url = "https://demoqa.com/books")
-    void tokenGenerationTest() {
-        given()
+    void tokenGenerationWithModelsTest() {
+        UserToken userToken = given()
                 .spec(requestSpec)
                 .body(setUserLoginData())
                 .when()
                 .post("/Account/v1/GenerateToken")
                 .then()
                 .spec(responseSpec)
-                .body("token", notNullValue(),
-                        "status", is("Success"),
-                        "result", is("User authorized successfully."));
+                .extract().as(UserToken.class);
+
+        assertThat(userToken.getToken()).isNotNull();
+        assertThat(userToken.getStatus()).isEqualTo(status);
+        assertThat(userToken.getResult()).isEqualTo(result);
     }
+
+    @Test
+    @DisplayName("Отображение списка всех книг (с использованием Groovy)")
+    @Tags({@Tag("Major"), @Tag("Medium")})
+    @Microservice("BookStore")
+    @Feature("Список книг")
+    @Story("Метод GET /BookStore/v1/Books")
+    @Severity(SeverityLevel.NORMAL)
+    void displayAListOfAllBooksWithGroovyTest() {
+        given()
+                .spec(requestSpec)
+                .when()
+                .get("/BookStore/v1/Books")
+                .then()
+                .spec(responseSpec)
+                .body("books", notNullValue(),
+                        "books.findAll{it.website =~/http.*?/}.website.flatten()",
+                        hasItem("http://eloquentjavascript.net/"));
+    }
+
 
     @Test
     @DisplayName("Отображение списка всех книг (с использованием Lombok)")
@@ -68,21 +93,40 @@ public class BookStoreTests extends TestBase {
     @Feature("Список книг")
     @Story("Метод GET /BookStore/v1/Books")
     @Severity(SeverityLevel.NORMAL)
-    void displayAListOfAllBooksTest() {
-        UserResponseData userResponseData = given()
+    void displayAListOfAllBooksWithLombokTest() {
+        BookList bookList = given()
                 .spec(requestSpec)
                 .when()
                 .get("/BookStore/v1/Books")
                 .then()
                 .spec(responseSpec)
-                .body("books", notNullValue(),
-                        "books[0].isbn", is(isbn),
-                        "books[0].title", is(titleBook))
-                .extract().as(UserResponseData.class);
+                .extract().as(BookList.class);
+
+        assertEquals(isbn, bookList.getBookList()[6].getIsbn());
+        assertEquals(titleBook, bookList.getBookList()[6].getTitle());
+        assertEquals(author, bookList.getBookList()[6].getAuthor());
+        assertEquals(pages, bookList.getBookList()[6].getPages());
     }
 
     @Test
-    @DisplayName("Отображение определенной книги по ISBN в списке всех книг (с использованием Groovy")
+    @DisplayName("Отображение списка всех книг (с использованием jsonSchema)")
+    @Tags({@Tag("Major"), @Tag("Medium")})
+    @Microservice("BookStore")
+    @Feature("Список книг")
+    @Story("Метод GET /BookStore/v1/Books")
+    @Severity(SeverityLevel.NORMAL)
+    void displayAListOfAllBooksWithJsonSchemaTest() {
+        given()
+                .spec(requestSpec)
+                .when()
+                .get("/BookStore/v1/Books")
+                .then()
+                .spec(responseSpec)
+                .body(matchesJsonSchemaInClasspath("schema/DisplayAListOfAllBooksWithLombokTestSchema.json"));
+    }
+
+    @Test
+    @DisplayName("Отображение определенной книги по ISBN в списке всех книг")
     @Tags({@Tag("Major"), @Tag("Medium")})
     @Microservice("BookStore")
     @Feature("Список книг")
@@ -106,16 +150,16 @@ public class BookStoreTests extends TestBase {
     @Tags({@Tag("Blocker"), @Tag("High")})
     @Microservice("BookStore")
     @Feature("Список добавленных книг в профиле пользователя")
-    @Story("Метод POST /BookStore/v1/Books")
+    @Story("Методы POST /BookStore/v1/Books ❘ DELETE /BookStore/v1/Book")
     @Severity(SeverityLevel.BLOCKER)
-    void addingABookToAUserProfileTest() {
+    void addingAndRemovingABookToAUserProfileTest() {
         given()
                 .spec(requestSpec)
                 .header("Authorization", "Bearer " + USER_RESPONSE_DATA.getToken())
                 .body(addingData)
                 .when()
                 .post("/BookStore/v1/Books")
-                .then().log().all()
+                .then().log().headers().and().log().body()
                 .statusCode(201)
                 .body("books[0].isbn", is(isbn));
 
@@ -125,10 +169,9 @@ public class BookStoreTests extends TestBase {
                 .body(removingData)
                 .when()
                 .delete("/BookStore/v1/Book")
-                .then().log().all()
+                .then().log().headers().and().log().body()
                 .statusCode(204)
                 .body(is(""));
-
     }
 }
 
