@@ -1,24 +1,22 @@
-package com.github.zlwqa;
+package com.github.zlwqa.tests;
 
 import annotations.JiraIssue;
 import annotations.JiraIssues;
 import annotations.Layer;
 import annotations.Microservice;
-import com.codeborne.selenide.logevents.SelenideLogger;
 import com.github.zlwqa.lombok.UserRequestDataLogin;
 import com.github.zlwqa.lombok.UserResponseData;
 import io.qameta.allure.*;
-import io.qameta.allure.selenide.AllureSelenide;
-import io.restassured.RestAssured;
-import org.junit.jupiter.api.*;
+import org.junit.jupiter.api.DisplayName;
+import org.junit.jupiter.api.Tag;
+import org.junit.jupiter.api.Tags;
+import org.junit.jupiter.api.Test;
 
-import static com.github.zlwqa.config.App.API_CONFIG;
 import static com.github.zlwqa.config.App.CREDENTIALS_CONFIG;
 import static com.github.zlwqa.specs.Specs.requestSpec;
 import static com.github.zlwqa.specs.Specs.responseSpec;
-import static io.qameta.allure.Allure.step;
-import static io.restassured.RestAssured.*;
-import static io.restassured.http.ContentType.JSON;
+import static com.github.zlwqa.tests.TestData.*;
+import static io.restassured.RestAssured.given;
 import static org.hamcrest.Matchers.is;
 import static org.hamcrest.Matchers.notNullValue;
 
@@ -27,7 +25,7 @@ import static org.hamcrest.Matchers.notNullValue;
 @Tag("API")
 @JiraIssues({@JiraIssue("HOMEWORK-326")})
 @DisplayName("Тестирование веб-приложения Book Store")
-public class BookStoreTests {
+public class BookStoreTests extends TestBase {
 
     public static final UserResponseData USER_RESPONSE_DATA = new UserResponseData();
     public static final UserRequestDataLogin USER_REQUEST_DATA_LOGIN = new UserRequestDataLogin();
@@ -41,28 +39,9 @@ public class BookStoreTests {
         return USER_REQUEST_DATA_LOGIN;
     }
 
-    @BeforeAll
-    static void setup() {
-        SelenideLogger.addListener("AllureSelenide", new AllureSelenide());
-        RestAssured.baseURI = API_CONFIG.apiUrl();
-        step("Получение токена авторизации и userId", () -> {
-            UserResponseData userResponseData = given()
-                    .spec(requestSpecification)
-                    .body(setUserLoginData())
-                    .when()
-                    .post("/Account/v1/Login")
-                    .then()
-                    .spec(responseSpec)
-                    .extract().as(UserResponseData.class);
-
-            USER_RESPONSE_DATA.setUserId(userResponseData.getUserId());
-            USER_RESPONSE_DATA.setToken(userResponseData.getToken());
-        });
-
-    }
 
     @Test
-    @DisplayName("Успешная генерация токена")
+    @DisplayName("Успешная генерация токена (с использованием Models)")
     @Tags({@Tag("Critical"), @Tag("Highest")})
     @Microservice("Generation Token")
     @Feature("Генерация токена")
@@ -83,26 +62,27 @@ public class BookStoreTests {
     }
 
     @Test
-    @DisplayName("Отображение списка всех книг")
+    @DisplayName("Отображение списка всех книг (с использованием Lombok)")
     @Tags({@Tag("Major"), @Tag("Medium")})
     @Microservice("BookStore")
     @Feature("Список книг")
     @Story("Метод GET /BookStore/v1/Books")
     @Severity(SeverityLevel.NORMAL)
     void displayAListOfAllBooksTest() {
-        given()
+        UserResponseData userResponseData = given()
                 .spec(requestSpec)
                 .when()
                 .get("/BookStore/v1/Books")
                 .then()
                 .spec(responseSpec)
                 .body("books", notNullValue(),
-                        "books[0].isbn", is("9781449325862"),
-                        "books[0].title", is("Git Pocket Guide"));
+                        "books[0].isbn", is(isbn),
+                        "books[0].title", is(titleBook))
+                .extract().as(UserResponseData.class);
     }
 
     @Test
-    @DisplayName("Отображение определенной книги по ISBN в списке всех книг")
+    @DisplayName("Отображение определенной книги по ISBN в списке всех книг (с использованием Groovy")
     @Tags({@Tag("Major"), @Tag("Medium")})
     @Microservice("BookStore")
     @Feature("Список книг")
@@ -111,60 +91,44 @@ public class BookStoreTests {
     void displayABookByISBNInTheListOfAllBooksTest() {
         given()
                 .spec(requestSpec)
-                .formParam("ISBN", "9781449325862")
+                .formParam("ISBN", isbn)
                 .when()
                 .get("/BookStore/v1/Book")
                 .then()
                 .spec(responseSpec)
                 .body(notNullValue())
-                .body("isbn", is("9781449325862"),
-                        "title", is("Git Pocket Guide"));
+                .body("isbn", is(isbn),
+                        "title", is(titleBook));
     }
 
     @Test
-    @DisplayName("Добавление книги в профиль пользователя")
+    @DisplayName("Добавление и удаление книги в профиль пользователя")
     @Tags({@Tag("Blocker"), @Tag("High")})
     @Microservice("BookStore")
     @Feature("Список добавленных книг в профиле пользователя")
     @Story("Метод POST /BookStore/v1/Books")
     @Severity(SeverityLevel.BLOCKER)
     void addingABookToAUserProfileTest() {
-        String data = "{\"userId\": \"" + USER_RESPONSE_DATA.getUserId() + "\"," +
-                "\"collectionOfIsbns\" : [{\"isbn\":\"9781449325862\"}]}";
-
         given()
                 .spec(requestSpec)
                 .header("Authorization", "Bearer " + USER_RESPONSE_DATA.getToken())
-                .body(data)
+                .body(addingData)
                 .when()
                 .post("/BookStore/v1/Books")
                 .then().log().all()
                 .statusCode(201)
-                .body("books[0].isbn", is("9781449325862"));
-    }
-
-    @Test
-    @DisplayName("Удаление добавленной книги из профиля пользователя")
-    @Tags({@Tag("Blocker"), @Tag("High")})
-    @Microservice("BookStore")
-    @Feature("Список добавленных книг в профиле пользователя")
-    @Story("Метод DELETE /BookStore/v1/Book")
-    @Severity(SeverityLevel.BLOCKER)
-    void removingAnAddedBookFromAUserProfileTest() {
-
-        String data = "{\"isbn\":\"9781449325862\"," +
-                "\"userId\": \"" + USER_RESPONSE_DATA.getUserId() + "\"}";
+                .body("books[0].isbn", is(isbn));
 
         given()
                 .spec(requestSpec)
                 .header("Authorization", "Bearer " + USER_RESPONSE_DATA.getToken())
-                .baseUri("https://demoqa.com")
-                .body(data)
+                .body(removingData)
                 .when()
                 .delete("/BookStore/v1/Book")
                 .then().log().all()
                 .statusCode(204)
                 .body(is(""));
+
     }
 }
 
