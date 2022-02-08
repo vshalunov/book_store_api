@@ -130,6 +130,7 @@ public class BookStoreTests extends TestBase {
     @Tags({@Tag("Major"), @Tag("Medium")})
     @Microservice("BookStore")
     @Feature("Список книг")
+    @Owner("AnotherQA")
     @Story("Метод GET /BookStore/v1/Book?ISBN=")
     @Severity(SeverityLevel.NORMAL)
     void displayABookByISBNInTheListOfAllBooksTest() {

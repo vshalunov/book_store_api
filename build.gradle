@@ -66,15 +66,3 @@ task high_priority_tests(type: Test) {
         includeTags "High"
     }
 }
-
-task web_test(type: Test) {
-    useJUnitPlatform {
-        includeTags 'Web'
-    }
-}
-
-task api_test(type: Test) {
-    useJUnitPlatform {
-        includeTags 'API'
-    }
-}
