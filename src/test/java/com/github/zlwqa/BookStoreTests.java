@@ -50,6 +50,7 @@ public class BookStoreTests {
                     .when()
                     .post("/Account/v1/Login")
                     .then()
+                    .spec(responseSpecification)
                     .extract().as(UserResponseData.class);
 
             USER_RESPONSE_DATA.setUserId(userResponseData.getUserId());
@@ -72,8 +73,8 @@ public class BookStoreTests {
                 .body(setUserLoginData())
                 .when()
                 .post("/Account/v1/GenerateToken")
-                .then().log().all()
-                .statusCode(200)
+                .then()
+                .spec(responseSpecification)
                 .body("token", notNullValue(),
                         "status", is("Success"),
                         "result", is("User authorized successfully."));
