@@ -17,8 +17,8 @@ public class Specs {
             .baseUri(API_CONFIG.apiUrl())
             //.basePath("path")
             .filter(customLogFilter().withCustomTemplates())
-            .log().all()
-            .contentType(ContentType.JSON);
+            .contentType(ContentType.JSON)
+            .log().all();
 
     public static ResponseSpecification responseSpec = new ResponseSpecBuilder()
             .log(HEADERS)
