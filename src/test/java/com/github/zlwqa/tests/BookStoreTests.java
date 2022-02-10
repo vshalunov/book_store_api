@@ -45,7 +45,7 @@ public class BookStoreTests extends TestBase {
 
     @Test
     @DisplayName("Успешная генерация токена (с использованием Models)")
-    @Tags({@Tag("Generate token"), @Tag("Highest")})
+    @Tags({@Tag("GenerateToken"), @Tag("Highest")})
     @Microservice("Generate Token")
     @Feature("Генерация токена")
     @Story("Метод /Account/v1/GenerateToken")
