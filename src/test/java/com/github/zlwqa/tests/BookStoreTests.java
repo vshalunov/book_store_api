@@ -45,8 +45,8 @@ public class BookStoreTests extends TestBase {
 
     @Test
     @DisplayName("Успешная генерация токена (с использованием Models)")
-    @Tags({@Tag("Critical"), @Tag("Highest")})
-    @Microservice("Generation Token")
+    @Tags({@Tag("Generate token"), @Tag("Highest")})
+    @Microservice("Generate Token")
     @Feature("Генерация токена")
     @Story("Метод /Account/v1/GenerateToken")
     @Severity(SeverityLevel.CRITICAL)
@@ -68,7 +68,7 @@ public class BookStoreTests extends TestBase {
 
     @Test
     @DisplayName("Отображение списка всех книг (с использованием Groovy)")
-    @Tags({@Tag("Major"), @Tag("Medium")})
+    @Tags({@Tag("BookStore"), @Tag("Medium")})
     @Microservice("BookStore")
     @Feature("Список книг")
     @Story("Метод GET /BookStore/v1/Books")
@@ -88,7 +88,7 @@ public class BookStoreTests extends TestBase {
 
     @Test
     @DisplayName("Отображение списка всех книг (с использованием Lombok)")
-    @Tags({@Tag("Major"), @Tag("Medium")})
+    @Tags({@Tag("BookStore"), @Tag("Medium")})
     @Microservice("BookStore")
     @Feature("Список книг")
     @Story("Метод GET /BookStore/v1/Books")
@@ -110,7 +110,7 @@ public class BookStoreTests extends TestBase {
 
     @Test
     @DisplayName("Отображение списка всех книг (с использованием jsonSchema)")
-    @Tags({@Tag("Major"), @Tag("Medium")})
+    @Tags({@Tag("BookStore"), @Tag("Medium")})
     @Microservice("BookStore")
     @Feature("Список книг")
     @Story("Метод GET /BookStore/v1/Books")
@@ -127,7 +127,7 @@ public class BookStoreTests extends TestBase {
 
     @Test
     @DisplayName("Отображение определенной книги по ISBN в списке всех книг")
-    @Tags({@Tag("Major"), @Tag("Medium")})
+    @Tags({@Tag("BookStore"), @Tag("Medium")})
     @Microservice("BookStore")
     @Feature("Список книг")
     @Owner("AnotherQA")
@@ -148,7 +148,7 @@ public class BookStoreTests extends TestBase {
 
     @Test
     @DisplayName("Добавление и удаление книги в профиль пользователя")
-    @Tags({@Tag("Blocker"), @Tag("High")})
+    @Tags({@Tag("BookStore"), @Tag("High")})
     @Microservice("BookStore")
     @Feature("Список добавленных книг в профиле пользователя")
     @Story("Методы POST /BookStore/v1/Books ❘ DELETE /BookStore/v1/Book")
