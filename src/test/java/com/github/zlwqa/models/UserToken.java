@@ -2,6 +2,7 @@ package com.github.zlwqa.models;
 
 import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 
+//Models использую для демонстрирования тестирования с помощью моделей
 @JsonIgnoreProperties(ignoreUnknown = true)
 public class UserToken {
 

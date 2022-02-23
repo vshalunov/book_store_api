@@ -9,8 +9,8 @@ import org.junit.jupiter.api.BeforeAll;
 import static com.github.zlwqa.config.App.API_CONFIG;
 import static com.github.zlwqa.specs.Specs.requestSpec;
 import static com.github.zlwqa.specs.Specs.responseSpec;
-import static com.github.zlwqa.tests.BookStoreTests.USER_RESPONSE_DATA;
-import static com.github.zlwqa.tests.BookStoreTests.setUserLoginData;
+import static com.github.zlwqa.tests.TestData.USER_RESPONSE_DATA;
+import static com.github.zlwqa.tests.TestData.setUserLoginData;
 import static io.qameta.allure.Allure.step;
 import static io.restassured.RestAssured.given;
 

@@ -10,7 +10,6 @@ import org.aeonbits.owner.Config;
 })
 public interface ApiConfig extends Config {
 
-    @Key("apiUrl")
     String apiUrl();
 
 }

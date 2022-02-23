@@ -10,9 +10,7 @@ import org.aeonbits.owner.Config;
 })
 public interface CredentialsConfig extends Config {
 
-    @Key("userName")
     String userName();
 
-    @Key("password")
     String password();
 }

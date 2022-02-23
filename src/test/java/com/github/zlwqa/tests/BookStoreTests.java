@@ -5,8 +5,6 @@ import annotations.JiraIssues;
 import annotations.Layer;
 import annotations.Microservice;
 import com.github.zlwqa.lombok.BookList;
-import com.github.zlwqa.lombok.UserRequestDataLogin;
-import com.github.zlwqa.lombok.UserResponseData;
 import com.github.zlwqa.models.UserToken;
 import io.qameta.allure.*;
 import org.junit.jupiter.api.DisplayName;
@@ -14,13 +12,12 @@ import org.junit.jupiter.api.Tag;
 import org.junit.jupiter.api.Tags;
 import org.junit.jupiter.api.Test;
 
-import static com.github.zlwqa.config.App.CREDENTIALS_CONFIG;
 import static com.github.zlwqa.specs.Specs.requestSpec;
 import static com.github.zlwqa.specs.Specs.responseSpec;
 import static com.github.zlwqa.tests.TestData.*;
 import static io.restassured.RestAssured.given;
-import static org.assertj.core.api.AssertionsForClassTypes.assertThat;
 import static io.restassured.module.jsv.JsonSchemaValidator.matchesJsonSchemaInClasspath;
+import static org.assertj.core.api.AssertionsForClassTypes.assertThat;
 import static org.hamcrest.Matchers.*;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 
@@ -30,18 +27,6 @@ import static org.junit.jupiter.api.Assertions.assertEquals;
 @JiraIssues({@JiraIssue("HOMEWORK-326")})
 @DisplayName("Тестирование веб-приложения Book Store")
 public class BookStoreTests extends TestBase {
-
-    public static final UserResponseData USER_RESPONSE_DATA = new UserResponseData();
-    public static final UserRequestDataLogin USER_REQUEST_DATA_LOGIN = new UserRequestDataLogin();
-
-    public static final String USER_NAME = CREDENTIALS_CONFIG.userName();
-    public static final String PASSWORD = CREDENTIALS_CONFIG.password();
-
-    public static UserRequestDataLogin setUserLoginData() {
-        USER_REQUEST_DATA_LOGIN.setUserName(USER_NAME);
-        USER_REQUEST_DATA_LOGIN.setPassword(PASSWORD);
-        return USER_REQUEST_DATA_LOGIN;
-    }
 
     @Test
     @DisplayName("Успешная генерация токена (с использованием Models)")
@@ -84,7 +69,6 @@ public class BookStoreTests extends TestBase {
                         "books.findAll{it.website =~/http.*?/}.website.flatten()",
                         hasItem("http://eloquentjavascript.net/"));
     }
-
 
     @Test
     @DisplayName("Отображение списка всех книг (с использованием Lombok)")
@@ -157,7 +141,7 @@ public class BookStoreTests extends TestBase {
         given()
                 .spec(requestSpec)
                 .header("Authorization", "Bearer " + USER_RESPONSE_DATA.getToken())
-                .body(addingData)
+                .body(setBookDataForAdd())
                 .when()
                 .post("/BookStore/v1/Books")
                 .then().log().headers().and().log().body()
@@ -167,7 +151,7 @@ public class BookStoreTests extends TestBase {
         given()
                 .spec(requestSpec)
                 .header("Authorization", "Bearer " + USER_RESPONSE_DATA.getToken())
-                .body(removingData)
+                .body(setBookDataForRemove())
                 .when()
                 .delete("/BookStore/v1/Book")
                 .then().log().headers().and().log().body()
@@ -175,4 +159,5 @@ public class BookStoreTests extends TestBase {
                 .body(is(""));
     }
 }
+
 
